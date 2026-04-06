@@ -80,7 +80,7 @@ function getChecklist(dow, dayIndex) {
     return [
       { id: "morning_supps", label: "Morning Supplements",                    group: "Morning" },
       { id: "breakfast",     label: "Breakfast — Whey / Collagen / Yogurt",   group: "Food"    },
-      { id: "lunch",         label: "Lunch — Turkey Burger + Cottage Cheese", group: "Food"    },
+      { id: "lunch",         label: "Lunch — Burrito Bowl", group: "Food"    },
       { id: "cottage_cheese",label: "Cottage Cheese",                         group: "Snacks"  },
       { id: "yogurt",        label: "Yogurt",                                 group: "Snacks"  },
       { id: "protein_bar",   label: "Protein Bar",                            group: "Snacks"  },
@@ -99,7 +99,7 @@ function getChecklist(dow, dayIndex) {
     items.push({ id: "walk",        label: "Long Walk",                      group: "Morning" });
   items.push({ id: "morning_supps", label: "Morning Supplements",            group: "Morning" });
   items.push({ id: "breakfast",     label: "Breakfast — Whey / Collagen / Yogurt", group: "Food" });
-  items.push({ id: "lunch",         label: isTrulyRest ? "Lunch — Turkey Burger + Cottage Cheese" : "Lunch — Turkey Bowl", group: "Food" });
+  items.push({ id: "lunch",         label: isTrulyRest ? "Lunch — Burrito Bowl" : "Lunch — Burrito Bowl", group: "Food" });
 
   if (GRINDSTONE_OVERRIDES[dayIndex])
     items.push({ id: "grindstone", label: GRINDSTONE_OVERRIDES[dayIndex],    group: "Training" });
