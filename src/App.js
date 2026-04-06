@@ -5,27 +5,29 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, R
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const START_DATE = new Date("2026-04-05");
-const END_DATE   = new Date("2026-05-26");
+const START_DATE = new Date("2026-04-06");
+const END_DATE   = new Date("2026-05-25");
 const TOTAL_DAYS = Math.round((END_DATE - START_DATE) / (1000 * 60 * 60 * 24));
 const USER_ID    = "dan";
 
 const WEIGHT_TARGETS = {
-  0: 239, 6: 231, 13: 227, 20: 224, 27: 221, 34: 218, 41: 216, 51: 214
+  0: 239, 5: 231, 12: 227, 19: 224, 26: 221, 33: 218, 40: 216, 50: 214
 };
 
-const BUSINESS_TRIP_DAYS = [29, 30, 31, 32];
+
+const BUSINESS_TRIP_DAYS = [28, 29, 30, 31];
 
 const GRINDSTONE_OVERRIDES = {
-  26: "Grindstone — Optional Two",
-  28: "Grindstone — Lower",
-  29: "Grindstone — Upper",
-  30: "Grindstone — Conditioning",
-  31: "Grindstone — Optional One",
-  34: "Grindstone — Optional Two",
+  25: "Grindstone — Optional Two", // Fri May 1
+  27: "Grindstone — Lower",        // Sun 5/3
+  28: "Grindstone — Upper",        // Mon 5/4
+  29: "Grindstone — Conditioning", // Tue 5/5
+  30: "Grindstone — Optional One", // Wed 5/6
+  33: "Grindstone — Optional Two", // Sat 5/9
 };
 
-const NO_HGH_DAYS = [27];
+const NO_HGH_DAYS = [26]; // Sat May 2
+
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
