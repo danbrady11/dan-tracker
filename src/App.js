@@ -51,8 +51,12 @@ function getDayIndex(dateStr) {
 }
 
 function getTodayStr() {
-  return new Date().toISOString().split("T")[0];
+  const d = new Date();
+  const offset = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - offset * 60 * 1000);
+  return local.toISOString().split("T")[0];
 }
+
 
 function getDayOfWeek(dateStr) {
   return new Date(dateStr + "T12:00:00").getDay();
