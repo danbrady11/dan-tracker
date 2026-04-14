@@ -74,7 +74,7 @@ function getChecklist(dow, dayIndex) {
     items.push({ id: "protein_bar",   label: "Protein Bar",                   group: "Snacks"  });
     if (GRINDSTONE_OVERRIDES[dayIndex])
       items.push({ id: "grindstone", label: GRINDSTONE_OVERRIDES[dayIndex],   group: "Training" });
-    items.push({ id: "evening_supps", label: isWed ? "Other Supplements" : "Evening Supplements", group: "Evening" });
+    items.push({ id: "evening_supps", label: "Evening Supplements", group: "Evening" });
     return items;
   }
 
@@ -97,9 +97,7 @@ function getChecklist(dow, dayIndex) {
   items.push({ id: "hgh",           label: "HGH",                            group: "Morning" });
   if ([1,2,4].includes(dow))
     items.push({ id: "towers",      label: "Towers",                         group: "Morning" });
-  if (isTrulyRest)
-    items.push({ id: "walk",        label: "Long Walk",                      group: "Morning" });
-  items.push({ id: "morning_supps", label: "Morning Supplements",            group: "Morning" });
+   items.push({ id: "morning_supps", label: "Morning Supplements",            group: "Morning" });
   items.push({ id: "breakfast",     label: "Breakfast — Whey / Collagen / Yogurt", group: "Food" });
   items.push({ id: "lunch",         label: "Lunch — Burrito Bowl",           group: "Food" });
 
@@ -115,13 +113,11 @@ function getChecklist(dow, dayIndex) {
     items.push({ id: "grindstone", label, group: "Training" });
   }
 
-  if (isTrulyRest)
-    items.push({ id: "shoulder_rehab", label: "Shoulder Rehab",              group: "Training" });
 
   items.push({ id: "cottage_cheese", label: "Cottage Cheese",                group: "Snacks"  });
   items.push({ id: "yogurt",         label: "Yogurt",                        group: "Snacks"  });
   items.push({ id: "protein_bar",    label: "Protein Bar",                   group: "Snacks"  });
-  items.push({ id: "evening_supps",  label: (isWed || isSun) ? "Other Supplements" : "Evening Supplements", group: "Evening" });
+  items.push({ id: "evening_supps",  label: "Evening Supplements", group: "Evening" });
 
   return items;
 }
