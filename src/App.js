@@ -153,8 +153,7 @@ const HABIT_DEFS = [
   { id: "evening_supps", label: "Evening Supps",  check: e => e.checks?.evening_supps,always: true  },
   { id: "grindstone",    label: "Grindstone",     check: e => e.checks?.grindstone,   trainingOnly: true },
   { id: "towers",        label: "Towers",         check: e => e.checks?.towers,       towersOnly: true   },
-  { id: "walk",          label: "Long Walk",      check: e => e.checks?.walk,         restOnly: true     },
-  { id: "shoulder_rehab",label: "Shoulder Rehab", check: e => e.checks?.shoulder_rehab,restOnly: true   },
+ 
 ];
 
 export default function App() {
