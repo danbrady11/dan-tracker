@@ -14,7 +14,6 @@ const WEIGHT_TARGETS = {
   0: 239, 5: 231, 12: 227, 19: 224, 26: 221, 33: 218, 40: 216, 50: 214
 };
 
-
 const BUSINESS_TRIP_DAYS = [28, 29, 30, 31];
 
 const GRINDSTONE_OVERRIDES = {
@@ -57,7 +56,6 @@ function getTodayStr() {
   return local.toISOString().split("T")[0];
 }
 
-
 function getDayOfWeek(dateStr) {
   return new Date(dateStr + "T12:00:00").getDay();
 }
@@ -84,7 +82,7 @@ function getChecklist(dow, dayIndex) {
     return [
       { id: "morning_supps", label: "Morning Supplements",                    group: "Morning" },
       { id: "breakfast",     label: "Breakfast — Whey / Collagen / Yogurt",   group: "Food"    },
-      { id: "lunch",         label: "Lunch — Burrito Bowl", group: "Food"    },
+      { id: "lunch",         label: "Lunch — Burrito Bowl",                   group: "Food"    },
       { id: "cottage_cheese",label: "Cottage Cheese",                         group: "Snacks"  },
       { id: "yogurt",        label: "Yogurt",                                 group: "Snacks"  },
       { id: "protein_bar",   label: "Protein Bar",                            group: "Snacks"  },
@@ -103,7 +101,7 @@ function getChecklist(dow, dayIndex) {
     items.push({ id: "walk",        label: "Long Walk",                      group: "Morning" });
   items.push({ id: "morning_supps", label: "Morning Supplements",            group: "Morning" });
   items.push({ id: "breakfast",     label: "Breakfast — Whey / Collagen / Yogurt", group: "Food" });
-  items.push({ id: "lunch",         label: isTrulyRest ? "Lunch — Burrito Bowl" : "Lunch — Burrito Bowl", group: "Food" });
+  items.push({ id: "lunch",         label: "Lunch — Burrito Bowl",           group: "Food" });
 
   if (GRINDSTONE_OVERRIDES[dayIndex])
     items.push({ id: "grindstone", label: GRINDSTONE_OVERRIDES[dayIndex],    group: "Training" });
@@ -170,6 +168,7 @@ export default function App() {
   const [saved,     setSaved]     = useState(false);
   const [activeTab, setActiveTab] = useState("today");
   const [todayStr]                = useState(getTodayStr);
+  const [logDate,   setLogDate]   = useState(getTodayStr);
   const [form,      setForm]      = useState({ weight: "", hrv: "", rhr: "", sober: null, feel: "" });
 
   const todayIndex = getDayIndex(todayStr);
@@ -182,6 +181,8 @@ export default function App() {
   const isTraining = [1,2,3,4,6].includes(todayDow);
   const dayLabel   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][todayDow];
   const completedCount = checklist.filter(i => todayChecks[i.id]).length;
+
+  const isBackfill = logDate !== todayStr;
 
   const entries = Object.entries(data)
     .map(([date, v]) => ({ date, ...v, dayIndex: getDayIndex(date) }))
@@ -215,9 +216,29 @@ export default function App() {
     });
   }, []);
 
+  function handleDateChange(newDate) {
+    setLogDate(newDate);
+    const existing = data[newDate];
+    if (existing) {
+      setForm({ weight: existing.weight || "", hrv: existing.hrv || "", rhr: existing.rhr || "", sober: existing.sober ?? null, feel: existing.feel || "" });
+    } else {
+      setForm({ weight: "", hrv: "", rhr: "", sober: null, feel: "" });
+    }
+  }
+
   async function handleSubmit() {
     setSaving(true);
-    const updated = { ...data, [todayStr]: { ...(data[todayStr] || {}), weight: form.weight ? +form.weight : null, hrv: form.hrv ? +form.hrv : null, rhr: form.rhr ? +form.rhr : null, sober: form.sober, feel: form.feel ? +form.feel : null }};
+    const updated = {
+      ...data,
+      [logDate]: {
+        ...(data[logDate] || {}),
+        weight: form.weight ? +form.weight : null,
+        hrv:    form.hrv    ? +form.hrv    : null,
+        rhr:    form.rhr    ? +form.rhr    : null,
+        sober:  form.sober,
+        feel:   form.feel   ? +form.feel   : null,
+      }
+    };
     setData(updated);
     await saveAllData(updated);
     setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000);
@@ -252,14 +273,17 @@ export default function App() {
         *{box-sizing:border-box;margin:0;padding:0;}
         input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
         input{background:transparent;border:none;outline:none;color:#e8e4dc;font-family:inherit;}
+        input[type=date]{color-scheme:dark;}
         .field{border-bottom:1px solid #2a2a2a;padding:10px 0;display:flex;justify-content:space-between;align-items:center;}
         .field input{text-align:right;font-size:18px;width:80px;}
+        .field input[type=date]{font-size:13px;width:auto;}
         .tab{padding:10px 0;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;font-size:10px;letter-spacing:2px;text-transform:uppercase;background:transparent;color:#555;flex:1;transition:all 0.2s;}
         .tab.active{color:#c8f060;border-bottom-color:#c8f060;}
         .sober-btn{flex:1;padding:14px;border:1px solid #2a2a2a;cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:2px;text-transform:uppercase;transition:all 0.2s;background:transparent;color:#666;}
         .sober-btn.yes.active{border-color:#c8f060;color:#c8f060;background:rgba(200,240,96,0.05);}
         .sober-btn.no.active{border-color:#ff4444;color:#ff4444;background:rgba(255,68,68,0.05);}
         .submit-btn{width:100%;padding:16px;background:#c8f060;color:#0a0a0a;border:none;cursor:pointer;font-family:inherit;font-size:12px;letter-spacing:3px;text-transform:uppercase;font-weight:500;}
+        .submit-btn.backfill{background:#f0a030;color:#0a0a0a;}
         .check-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #161616;cursor:pointer;-webkit-tap-highlight-color:transparent;}
         .checkbox{width:24px;height:24px;border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;border-radius:2px;}
         .checkbox.checked{border-color:#c8f060;background:rgba(200,240,96,0.1);}
@@ -268,6 +292,7 @@ export default function App() {
         .pbar{height:2px;background:#1a1a1a;margin-top:8px;}
         .pfill{height:2px;background:#c8f060;transition:width 0.4s;}
         .ahead{color:#c8f060;}.behind{color:#ff6b6b;}
+        .backfill-banner{background:rgba(240,160,48,0.08);border:1px solid rgba(240,160,48,0.3);padding:8px 12px;margin-bottom:16px;font-size:10px;letter-spacing:2px;color:#f0a030;text-transform:uppercase;}
       `}</style>
 
       {/* Header */}
@@ -332,7 +357,27 @@ export default function App() {
             <div className="pbar"><div className="pfill" style={{ width:`${checklist.length?(completedCount/checklist.length)*100:0}%` }} /></div>
           </div>
 
-          <div style={{ fontSize:10, letterSpacing:3, color:"#444", textTransform:"uppercase", marginBottom:12 }}>Log Today</div>
+          <div style={{ fontSize:10, letterSpacing:3, color:"#444", textTransform:"uppercase", marginBottom:12 }}>Log Entry</div>
+
+          {/* Date picker */}
+          <div className="field">
+            <span style={{ fontSize:12, letterSpacing:1, color:"#888" }}>DATE</span>
+            <input
+              type="date"
+              value={logDate}
+              min="2026-04-06"
+              max={todayStr}
+              onChange={e => handleDateChange(e.target.value)}
+            />
+          </div>
+
+          {/* Backfill banner */}
+          {isBackfill && (
+            <div className="backfill-banner">
+              ⚠ Editing past entry — {new Date(logDate+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})} (Day {getDayIndex(logDate)+1})
+            </div>
+          )}
+
           {[{key:"weight",label:"WEIGHT",unit:"lb",step:"0.1"},{key:"hrv",label:"HRV",unit:"ms"},{key:"rhr",label:"RHR",unit:"bpm"},{key:"feel",label:"FEEL (1–10)",unit:"",min:1,max:10}].map(f => (
             <div key={f.key} className="field">
               <span style={{ fontSize:12, letterSpacing:1, color:"#888" }}>{f.label}</span>
@@ -344,25 +389,27 @@ export default function App() {
           ))}
 
           <div style={{ marginTop:20, marginBottom:20 }}>
-            <div style={{ fontSize:10, letterSpacing:3, color:"#444", textTransform:"uppercase", marginBottom:10 }}>Alcohol Free Today?</div>
+            <div style={{ fontSize:10, letterSpacing:3, color:"#444", textTransform:"uppercase", marginBottom:10 }}>Alcohol Free {isBackfill ? `(${new Date(logDate+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})})` : "Today"}?</div>
             <div style={{ display:"flex", gap:8 }}>
               <button className={`sober-btn yes ${form.sober===true?"active":""}`} onClick={() => setForm(f=>({...f,sober:true}))}>✓ Yes</button>
               <button className={`sober-btn no ${form.sober===false?"active":""}`} onClick={() => setForm(f=>({...f,sober:false}))}>✗ No</button>
             </div>
           </div>
 
-          <button className="submit-btn" onClick={handleSubmit}>
-            {saving ? "Saving..." : saved ? "✓ Saved" : "Log Entry"}
+          <button className={`submit-btn ${isBackfill?"backfill":""}`} onClick={handleSubmit}>
+            {saving ? "Saving..." : saved ? "✓ Saved" : isBackfill ? `Update Day ${getDayIndex(logDate)+1}` : "Log Entry"}
           </button>
 
-          <div style={{ marginTop:24, padding:"12px", borderLeft:"2px solid #c8f060", fontSize:11, color:"#555", letterSpacing:1, lineHeight:1.6 }}>
-            {soberStreak===0 && "Day 1 starts now. Everything else is dialed. This is the only variable."}
-            {soberStreak===1 && "One day down. The first weekend is the hardest. Plan it."}
-            {soberStreak>=2 && soberStreak<7 && `${soberStreak} days. Habit loop still fighting back. Hold the line.`}
-            {soberStreak>=7 && soberStreak<14 && `${soberStreak} days. Peak craving window. HRV should be climbing.`}
-            {soberStreak>=14 && soberStreak<21 && `${soberStreak} days. Neurological rewire underway. Getting easier now.`}
-            {soberStreak>=21 && `${soberStreak} days. New normal. Stack is firing clean.`}
-          </div>
+          {!isBackfill && (
+            <div style={{ marginTop:24, padding:"12px", borderLeft:"2px solid #c8f060", fontSize:11, color:"#555", letterSpacing:1, lineHeight:1.6 }}>
+              {soberStreak===0 && "Day 1 starts now. Everything else is dialed. This is the only variable."}
+              {soberStreak===1 && "One day down. The first weekend is the hardest. Plan it."}
+              {soberStreak>=2 && soberStreak<7 && `${soberStreak} days. Habit loop still fighting back. Hold the line.`}
+              {soberStreak>=7 && soberStreak<14 && `${soberStreak} days. Peak craving window. HRV should be climbing.`}
+              {soberStreak>=14 && soberStreak<21 && `${soberStreak} days. Neurological rewire underway. Getting easier now.`}
+              {soberStreak>=21 && `${soberStreak} days. New normal. Stack is firing clean.`}
+            </div>
+          )}
         </div>
       )}
 
