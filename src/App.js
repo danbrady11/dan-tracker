@@ -168,7 +168,8 @@ export default function App() {
   const [saved,     setSaved]     = useState(false);
   const [activeTab, setActiveTab] = useState("today");
   const [todayStr]                = useState(getTodayStr);
-  const [logDate,   setLogDate]   = useState(getTodayStr);
+  const [logDate,      setLogDate]      = useState(getTodayStr);
+  const [checklistDate,setChecklistDate] = useState(getTodayStr);
   const [form,      setForm]      = useState({ weight: "", hrv: "", rhr: "", sober: null, feel: "" });
 
   const todayIndex = getDayIndex(todayStr);
@@ -414,36 +415,63 @@ export default function App() {
       )}
 
       {/* ── CHECKLIST ── */}
-      {activeTab === "checklist" && (
-        <div style={{ padding:"20px" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
-            <div style={{ fontSize:10, letterSpacing:3, color:"#444", textTransform:"uppercase" }}>
-              {new Date(todayStr+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"})}
+      {activeTab === "checklist" && (() => {
+        const clDate     = checklistDate;
+        const clIndex    = getDayIndex(clDate);
+        const clDow      = getDayOfWeek(clDate);
+        const clList     = getChecklist(clDow, clIndex);
+        const clEntry    = data[clDate] || {};
+        const clChecks   = clEntry.checks || {};
+        const clDone     = clList.filter(i => clChecks[i.id]).length;
+        const clBackfill = clDate !== todayStr;
+
+        async function toggleCheckDate(id) {
+          const updated = { ...data, [clDate]: { ...(data[clDate] || {}), checks: { ...clChecks, [id]: !clChecks[id] }}};
+          setData(updated);
+          await saveAllData(updated);
+        }
+
+        return (
+          <div style={{ padding:"20px" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
+              <input
+                type="date"
+                value={clDate}
+                min="2026-04-06"
+                max={todayStr}
+                style={{ background:"transparent", border:"none", outline:"none", color:"#888", fontFamily:"inherit", fontSize:10, letterSpacing:2, textTransform:"uppercase", colorScheme:"dark" }}
+                onChange={e => setChecklistDate(e.target.value)}
+              />
+              <div style={{ fontSize:12, color:clDone===clList.length?"#c8f060":"#666" }}>{clDone}/{clList.length}</div>
             </div>
-            <div style={{ fontSize:12, color:completedCount===checklist.length?"#c8f060":"#666" }}>{completedCount}/{checklist.length}</div>
-          </div>
-          <div className="pbar" style={{ marginBottom:4 }}><div className="pfill" style={{ width:`${checklist.length?(completedCount/checklist.length)*100:0}%` }} /></div>
-          {GROUPS.map(group => {
-            const items = checklist.filter(i => i.group===group);
-            if (!items.length) return null;
-            return (
-              <div key={group}>
-                <div className="group-hd">{group}</div>
-                {items.map(item => (
-                  <div key={item.id} className="check-row" onClick={() => toggleCheck(item.id)}>
-                    <div className={`checkbox ${todayChecks[item.id]?"checked":""}`}>
-                      {todayChecks[item.id] && <span style={{ color:"#c8f060", fontSize:14 }}>✓</span>}
-                    </div>
-                    <span style={{ fontSize:13, color:todayChecks[item.id]?"#444":"#e8e4dc", textDecoration:todayChecks[item.id]?"line-through":"none" }}>
-                      {item.label}
-                    </span>
-                  </div>
-                ))}
+            {clBackfill && (
+              <div className="backfill-banner" style={{ marginBottom:8 }}>
+                ⚠ Editing past — Day {clIndex+1}
               </div>
-            );
-          })}
-        </div>
-      )}
+            )}
+            <div className="pbar" style={{ marginBottom:4 }}><div className="pfill" style={{ width:`${clList.length?(clDone/clList.length)*100:0}%` }} /></div>
+            {GROUPS.map(group => {
+              const items = clList.filter(i => i.group===group);
+              if (!items.length) return null;
+              return (
+                <div key={group}>
+                  <div className="group-hd">{group}</div>
+                  {items.map(item => (
+                    <div key={item.id} className="check-row" onClick={() => toggleCheckDate(item.id)}>
+                      <div className={`checkbox ${clChecks[item.id]?"checked":""}`}>
+                        {clChecks[item.id] && <span style={{ color:"#c8f060", fontSize:14 }}>✓</span>}
+                      </div>
+                      <span style={{ fontSize:13, color:clChecks[item.id]?"#444":"#e8e4dc", textDecoration:clChecks[item.id]?"line-through":"none" }}>
+                        {item.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* ── HABITS ── */}
       {activeTab === "habits" && (() => {
